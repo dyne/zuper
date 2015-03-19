@@ -1,24 +1,23 @@
 ```
- .----------------.  .----------------.  .----------------.  .----------------.  .----------------. 
-| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
-| |   ________   | || | _____  _____ | || |   ______     | || |  _________   | || |  _______     | |
-| |  |  __   _|  | || ||_   _||_   _|| || |  |_   __ \   | || | |_   ___  |  | || | |_   __ \    | |
-| |  |_/  / /    | || |  | |    | |  | || |    | |__) |  | || |   | |_  \_|  | || |   | |__) |   | |
-| |     .'.' _   | || |  | '    ' |  | || |    |  ___/   | || |   |  _|  _   | || |   |  __ /    | |
-| |   _/ /__/ |  | || |   \ '--' /   | || |   _| |_      | || |  _| |___/ |  | || |  _| |  \ \_  | |
-| |  |________|  | || |    '.__.'    | || |  |_____|     | || | |_________|  | || | |____| |___| | |
-| |              | || |              | || |              | || |              | || |              | |
-| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
- '----------------'  '----------------'  '----------------'  '----------------'  '----------------'
+ _  _  _  _  _
+(_)(_)(_)(_)(_)
+          _(_)_         _   _  _  _  _    _  _  _  _  _       _  _
+        _(_) (_)       (_) (_)(_)(_)(_)_ (_)(_)(_)(_)(_)_  _ (_)(_)
+      _(_)   (_)       (_) (_)        (_(_) _  _  _ (_)(_)(_)
+    _(_)     (_)       (_) (_)        (_(_)(_)(_)(_)(_)(_)
+ _ (_) _  _  (_)_  _  _(_)_(_) _  _  _(_(_)_  _  _  _  (_)
+(_)(_)(_)(_)(_)(_)(_)(_) (_(_)(_)(_)(_)   (_)(_)(_)(_) (_)
+                           (_)
+                           (_)
 ```
 
 **Z**sh **U**ltimate **P**rogrammer's **E**xtensions **R**efurbished - version 0.1
 
 # Introduction
 
-Zuper is a minimalist library of extensions for Zsh programming, that
-is for all those people out there using Zsh as a programming language
-or a scripting glue.
+Zuper is a minimalist library of extensions for Zsh programming,
+because believe it or not Zsh is so slick and powerful that it can be
+used as a programming language.
 
 # Features
 
@@ -44,13 +43,15 @@ program call `endgame` for a clean exit. Example test program:
 debug=1
 # switch on zuper's key/value load/save extension
 zkv=1
+# switch off zuper's consul kv get/set extension
+unset consul
 
 source zuper
 
 # declare a custom global variable
 vars+=(myvar)
-# assign a value to our global variable
-myvar=ok
+# assign a default value to our global variable
+myvar=${myvar:-ok}
 
 # declare a custom function to print it out
 testfun() {
@@ -79,7 +80,7 @@ mymap=(
 )
 
 # save the map into a file
-zkv.save mymap test.map 
+zkv.save mymap test.map
 
 # free the map
 mymap=()
@@ -93,7 +94,7 @@ for i in ${(k)mymap}; do
     print "$i \t ${mymap[$i]}"
 done
 
-# end the program (will call destructors)
+# end the program (call destructors)
 endgame
 ```
 
@@ -125,4 +126,3 @@ the GNU Public License for more details.
 You should have received a copy of the GNU Public License along with
 this source code; if not, write to: Free Software Foundation, Inc.,
 675 Mass Ave, Cambridge, MA 02139, USA.
-
