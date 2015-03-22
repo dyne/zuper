@@ -24,7 +24,7 @@
 ##########################
 typeset -aU vars
 typeset -aU arrs
-vars=(debug quiet)
+vars=(debug quiet ztmpfile)
 arrs=()
 
 debug=${debug:-0}
@@ -219,14 +219,16 @@ endgame() {
 ##########################
 # Temp file handling
 
+# ztmp() fills in $ztmpfile global. Caller must copy that variable as
+# it will be overwritten at every call.
 ztmp() {
     fn ztmp
 
-    _tmp=`mktemp`
-    tmpfiles+=($_tmp)
-    print $_tmp
+    ztmpfile=`mktemp`
+    tmpfiles+=($ztmpfile)
 }
 
+# All tempfiles are freed in endgame()
 _ztmp_destructor() {
     fn _ztmp_destructor
 
