@@ -104,8 +104,7 @@ for i in ${(k)mymap}; do
     print "$i \t ${mymap[$i]}"
 done
 
-# end the program (call destructors)
-endgame
+# end of the program (will call destructors)
 ```
 
 

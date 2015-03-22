@@ -25,7 +25,7 @@
 typeset -aU vars
 typeset -aU arrs
 vars=(debug quiet ztmpfile)
-arrs=()
+arrs=(req freq)
 
 debug=${debug:-0}
 quiet=${quiet:-0}
@@ -124,17 +124,8 @@ function _print() {
 }
 
 
-
 fn() {
-    local msg="$1"
-    command -v gettext 1>/dev/null 2>/dev/null \
-        && msg="$(gettext -s "$1")"
-    for i in $(seq 2 ${#}); do
-        msg=${(S)msg//::$(($i - 1))*::/$*[$i]}
-    done
-    
-    fun="$msg"
-    func "$fun"
+    fun="$@"
     req=()
     freq=()
 }
@@ -215,6 +206,9 @@ endgame() {
     return 0
 }
 
+# Register endgame() to be called at exit.
+# unlike TRAPEXIT, the zshexit() hook is not called when functions exit.
+zshexit() { endgame EXIT; return $? }
 
 ##########################
 # Temp file handling
