@@ -59,6 +59,16 @@ testfun() {
     fn "testfun"
     # print out with nice green colors
     notice "Custom var: $myvar"
+    # create a tempfile
+    ztmp && mytmp=$ztmpfile
+    # put the value into the tempfile
+    print $myvar >> $mytmp
+    # print out the path to the tempfile
+    act "Temp file: $mytmp"
+    # print out the contents of the tempfile
+    act "Content: `cat $mytmp`"
+    # the tempfile will be deleted in endgame()
+    # but can also be delete earlier here, optionally
 }
 
 # wrap the init phase
