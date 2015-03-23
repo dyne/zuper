@@ -24,11 +24,15 @@
 ##########################
 typeset -aU vars
 typeset -aU arrs
-vars=(debug quiet ztmpfile)
+vars=(DEBUG QUIET ztmpfile)
 arrs=(req freq)
 
-debug=${debug:-0}
-quiet=${quiet:-0}
+# reset list of destructors
+destruens=()
+
+# global execution flags
+DEBUG=${DEBUG:-0}
+QUIET=${QUIET:-0}
 
 vars+=(zuper_version)
 zuper_version=0.1
@@ -93,33 +97,33 @@ function _msg() {
 function _message say act() {
     local notice="message"
     [[ "$1" = "-n" ]] && shift && notice="inline"
-    [[ $quiet = 1 ]] || _msg "$notice" $@
+    [[ $QUIET = 1 ]] || _msg "$notice" $@
     return 0
 }
 
 function _verbose xxx func() {
-    [[ $debug = 1 ]] && _msg verbose $@
+    [[ $DEBUG = 1 ]] && _msg verbose $@
     return 0
 }
 
 function _success yes notice() {
-    [[ $quiet = 1 ]] || _msg success $@
+    [[ $QUIET = 1 ]] || _msg success $@
     return 0
 }
 
 function _warning no warn warning() {
-    [[ $quiet = 1 ]] || _msg warning $@
+    [[ $QUIET = 1 ]] || _msg warning $@
     return 0
 }
 
 function _failure fatal die error() {
     #    typeset -i exitcode=${exitv:-1}
-    [[ $quiet = 1 ]] || _msg failure $@
+    [[ $QUIET = 1 ]] || _msg failure $@
     return 1
 }
 
 function _print() {
-    [[ $quiet = 1 ]] || _msg print $@
+    [[ $QUIET = 1 ]] || _msg print $@
     return 0
 }
 
@@ -151,7 +155,7 @@ ckreq reqck() {
     return $err
 }
 
-zerr() { 
+zerr() {
     error "error in: ${fun:-$last_notice}"
 
     [[ "$last_func" = "" ]] || warn "called in: $last_func"
@@ -172,7 +176,10 @@ zdump() {
     done
 }
 
-
+# handy wrappers for throw/catch execution of blocks where we need the
+# program to exit on any error (non-zero) returned by any function
+throw() { function TRAPZERR() { zerr; return 1 } }
+catch() { function TRAPZERR() { } }
 
 ##########################
 # Endgame handling
@@ -248,7 +255,7 @@ destruens+=(_ztmp_destructor)
     # load a map from a file
     # map must be already instantiated with typeset -A by called
     # name of map is defined inside the file
-    zkv.load() {
+    function zkv.load() {
         fn "zkv-load $*"
 
         file=$1
@@ -271,7 +278,7 @@ destruens+=(_ztmp_destructor)
     # save a map in a file
     # $1 = name of the map associative array
     # $2 = full path to the file
-    zkv.save() {
+    function zkv.save() {
         fn "zkv.save $*"
 
         _map=$1
@@ -293,7 +300,7 @@ destruens+=(_ztmp_destructor)
         _karr=(${(Pk)_map})
         _varr=(${(Pv)_map})
         _num="${#_karr}"
-        for c in {1..$_num}; do        
+        for c in {1..$_num}; do
             # can also be cat here, however for speed we use builtins
             # switch to cat if compatibility is an issue
             sysread -o 1 <<EOF >> $_path
@@ -317,9 +324,9 @@ EOF
 
     zmodload zsh/net/tcp
 
-    zconsul.set() {
+    function zconsul.set() {
         fn "zconsul.set $*"
-        
+
         # checks if consul running up to the caller
 
         _host=$1 # ip address
@@ -362,7 +369,7 @@ EOF
 
         return 0
 
-    }    
+    }
 
     zconsul.get() {
         fn "zconsul.get $*"
@@ -371,7 +378,7 @@ EOF
         _port=${host[(ws@:@)2]:-8500}
         _k=$2 # key name
         _v=$3 # value
-        
+
         req=(_host _port _k _v)
         ckreq || return $?
 
@@ -402,3 +409,83 @@ EOF
     }
 
 }
+
+# {{{ Helpers
+[[ "$helpers" = "" ]] || {
+
+    # remote leading and trailing spaces in a string taken from stdin
+    function trim() {
+        sed -e 's/^[[:space:]]*//g ; s/[[:space:]]*\$//g'
+    }
+
+    zmodload zsh/mapfile
+    # faster substitute for cat
+    function printfile() {
+        print ${mapfile[$1]}
+    }
+
+    # extract all emails found in a text from stdin
+    # outputs them one per line
+    function extract_emails() {
+        awk '{ for (i=1;i<=NF;i++)
+     if ( $i ~ /[[:alnum:]]@[[:alnum:]]/ ) {
+       gsub(/<|>|,/ , "" , $i); print $i } }'
+    }
+
+
+    zmodload zsh/regex
+    # takes a string as argument, returns success if is an email
+    function isemail() {
+        [[ "$1" -regex-match "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b" ]] && return 0
+
+        return 1
+    }
+
+    # takes a numeric argument and prints out a human readable size
+    function human_size() {
+        [[ $1 -gt 0 ]] || {
+            error "human_size() called with invalid argument"
+            return 1
+        }
+
+        # we use the binary operation for speed
+        # shift right 10 is divide by 1024
+
+        # gigabytes
+        [[ $1 -gt 1073741824 ]] && {
+            print -n "$(( $1 >> 30 )) GB"
+            return 0
+        }
+
+        # megabytes
+        [[ $1 -gt 1048576 ]] && {
+            print -n "$(( $1 >> 20 )) MB"
+            return 0
+        }
+        # kilobytes
+        [[ $1 -gt 1024 ]] && {
+            print -n "$(( $1 >> 10 )) KB"
+            return 0
+        }
+        # bytes
+        print -n "$1 Bytes"
+        return 0
+    }
+
+
+    # strips out all html/xml tags (everything between < >)
+    function xml_strip html_strip() { sed 's/<[^>]\+>//g' }
+
+    # changes stdin string special chars to be shown in html
+    function escape_html() {
+        sed -e '
+s/\&/\&amp;/g
+s/>/\&gt;/g
+s/</\&lt;/g
+s/"/\&quot;/g
+'
+    }
+
+}
+
+# }}} Helpers
