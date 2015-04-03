@@ -314,7 +314,7 @@ EOF
 
 # optional: define zconsul=1 on source
 
-[[ "$zconsul" = "" ]] || {
+[[ "$consul" = "" ]] || {
 
     ########
     # Consul
@@ -414,19 +414,19 @@ EOF
 [[ "$helpers" = "" ]] || {
 
     # remote leading and trailing spaces in a string taken from stdin
-    function trim() {
+    function helper.trim trim() {
         sed -e 's/^[[:space:]]*//g ; s/[[:space:]]*\$//g'
     }
 
     zmodload zsh/mapfile
     # faster substitute for cat
-    function printfile() {
+    function helper.printfile printfile() {
         print ${mapfile[$1]}
     }
 
     # extract all emails found in a text from stdin
     # outputs them one per line
-    function extract_emails() {
+    function helper.extract-emails extract_emails() {
         awk '{ for (i=1;i<=NF;i++)
      if ( $i ~ /[[:alnum:]]@[[:alnum:]]/ ) {
        gsub(/<|>|,/ , "" , $i); print $i } }'
@@ -435,14 +435,14 @@ EOF
 
     zmodload zsh/regex
     # takes a string as argument, returns success if is an email
-    function isemail() {
+    function helper.isemail isemail() {
         [[ "$1" -regex-match "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b" ]] && return 0
 
         return 1
     }
 
     # takes a numeric argument and prints out a human readable size
-    function human_size() {
+    function helper.human-size human_size() {
         [[ $1 -gt 0 ]] || {
             error "human_size() called with invalid argument"
             return 1
@@ -474,10 +474,10 @@ EOF
 
 
     # strips out all html/xml tags (everything between < >)
-    function xml_strip html_strip() { sed 's/<[^>]\+>//g' }
+    function helper.html-strip xml_strip html_strip() { sed 's/<[^>]\+>//g' }
 
     # changes stdin string special chars to be shown in html
-    function escape_html() {
+    function helper.excape-html escape_html() {
         sed -e '
 s/\&/\&amp;/g
 s/>/\&gt;/g
@@ -489,3 +489,65 @@ s/"/\&quot;/g
 }
 
 # }}} Helpers
+
+# {{{ Config
+
+vars+=(config_section_type)
+arrs+=(config_section)
+config_section_type=org-mode
+
+config.section.type() {
+    fn config.section.type
+    _type=$1
+    req=(_type)
+    ckreq || return $?
+
+    case $_type in
+        org-mode)
+            config_section_type=org-mode
+            ;;
+        *)
+            error "Unknown config type:$_type"
+            return 1
+            ;;
+    esac
+
+    act "$_type config section parser initialized"
+    return 0
+
+}
+
+# fills in contents of section in array config_section
+config.section.read() {
+    fn config.section.read
+    _file=$1
+    _section=$2
+    req=(_file _section)
+    freq=($_file)
+    ckreq || return $?
+
+    case $config_section_type in
+        org-mode)
+            _contents=`awk '
+BEGIN { found=0 }
+/^#\+ '"$_section"'/ { found=1; next }
+/^#\+/ { if(found==1) exit 0 }
+/^$/ { next }
+{ if(found==1) print $0 }
+' $_file`
+
+            ;;
+        *)
+            error "Unknown config type:$_type"
+            ;;
+    esac
+
+    config_section=()
+    for c in ${(f)_contents}; do
+        config_section+=("$c")
+    done
+    return 0
+
+}
+
+# }}}
