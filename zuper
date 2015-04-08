@@ -24,23 +24,17 @@
 ##########################
 typeset -aU vars
 typeset -aU arrs
-vars=(DEBUG QUIET ztmpfile)
+typeset -aU maps
+
+vars=(DEBUG QUIET LOG)
 arrs=(req freq)
 
-# reset list of destructors
-destruens=()
-
-# global execution flags
-DEBUG=${DEBUG:-0}
-QUIET=${QUIET:-0}
-
 vars+=(zuper_version)
-zuper_version=0.1
+zuper_version=0.2
 
 # Messaging function with pretty coloring
 autoload colors
 colors
-
 
 vars+=(last_act last_func last_notice)
 
@@ -91,6 +85,13 @@ function _msg() {
             ;;
     esac
     ${=command} "${progname} $fg_bold[$pcolor]$pchars$reset_color ${message}$color[reset_color]" >&2
+
+    # write the log if its configured
+    [[ "$LOG" = "" ]] || {
+        touch $LOG || return $?
+        ${=command} "${progname} $fg_bold[$pcolor]$pchars$reset_color ${message}$color[reset_color]" >> $LOG
+    }
+
     return $returncode
 }
 
@@ -157,23 +158,35 @@ ckreq reqck() {
 
 zerr() {
     error "error in: ${fun:-$last_notice}"
-
-    [[ "$last_func" = "" ]] || warn "called in: $last_func"
-    [[ "$last_act" = "" ]] || warn "called in: $last_act"
+    [[ "$last_func"   = "" ]] || warn "called in: $last_func"
+    [[ "$last_act"    = "" ]] || warn "called in: $last_act"
     [[ "$last_notice" = "" ]] || warn "called in: $last_notice"
-    [[ "$fun" = "" ]] || warn "called in: $fun"
+    [[ "$fun"         = "" ]] || warn "called in: $fun"
     error "error reported, operation aborted."
     return 1
 }
 
 zdump() {
     fn zdump
-    for v in $vars; do
-        print "$v \t ${(P)v}"
-    done
-    for a in $arrs; do
-        print "$a \t ${(P)a}"
-    done
+    [[ ${#vars} -gt 0 ]] && {
+        print "Global variables:"
+        for _v in $vars; do
+            print " $_v = \t ${(P)_v}"
+        done
+    }
+    [[ ${#arrs} -gt 0 ]] && {
+        print "Global arrays:"
+        for _a in $arrs; do
+        print " $_a \t ( ${(P)_a} )"
+        done
+    }
+    [[ ${#maps} -gt 0 ]] && {
+        print "Global maps:"
+        for _m in $maps; do
+            print " $_m [key] \t ( ${(Pk)_m} )"
+            print " $_m [val] \t ( ${(Pv)_m} )"
+        done
+    }
 }
 
 # handy wrappers for throw/catch execution of blocks where we need the
@@ -185,6 +198,7 @@ catch() { function TRAPZERR() { } }
 # Endgame handling
 
 arrs+=(destruens)
+destruens=()
 
 # Trap functions for the endgame event
 TRAPINT()  { endgame INT;   return $? }
@@ -220,6 +234,7 @@ zshexit() { endgame EXIT; return $? }
 ##########################
 # Temp file handling
 
+vars+=(ztmpfile)
 # ztmp() fills in $ztmpfile global. Caller must copy that variable as
 # it will be overwritten at every call.
 ztmp() {
@@ -412,6 +427,11 @@ EOF
 
 # {{{ Helpers
 [[ "$helpers" = "" ]] || {
+
+    function helper.isfound isfound() {
+        command -v $1   1>/dev/null 2>/dev/null
+        return $?
+    }
 
     # remote leading and trailing spaces in a string taken from stdin
     function helper.trim trim() {
