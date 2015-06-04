@@ -11,7 +11,7 @@
                            (_)
 ```
 
-**Z**sh **U**ltimate **P**rogrammer's **E**xtensions **R**efurbished - version 0.1
+**Z**sh **U**ltimate **P**rogrammer's **E**xtensions **R**efurbished - version 0.2
 
 # Introduction
 
@@ -40,18 +40,26 @@ program call `endgame` for a clean exit. Example test program:
 #!/usr/bin/env zsh
 
 # switch on debugging output
-debug=1
+DEBUG=1
+
 # switch on zuper's key/value load/save extension
 zkv=1
 # switch off zuper's consul kv get/set extension
 unset consul
+# switch on zuper's helper extensions
+helper=1
 
+# switch logging into test.log
+LOG=test.log
+
+# load our zuper library
 source zuper
 
 # declare a custom global variable
 vars+=(myvar)
 # assign a default value to our global variable
 myvar=${myvar:-ok}
+
 
 # declare a custom function to print it out
 testfun() {
@@ -71,7 +79,10 @@ testfun() {
     # but can also be delete earlier here, optionally
 }
 
-# wrap the init phase
+# declare a global associative map
+maps+=(mymap)
+
+# conclude the init phase
 source zuper.init
 
 # register the zdump debug function to be executed on exit
@@ -80,8 +91,6 @@ destruens+=(zdump)
 # call our custom function
 testfun
 
-# declare an associative array map
-typeset -A mymap
 # we use words and their md5
 mymap=(
     lorem f737a087bca81f69a6048ec744c73e41
@@ -109,6 +118,8 @@ done
 
 
 # Deployment
+
+Here we reference applications where zuper is used succesfully:
 
  - Devuan Simple Development Toolkit https://git.devuan.org/devuan/devuan-sdk#tab-readme
  - Dowse IoT awareness OS http://dyne.org/software/dowse

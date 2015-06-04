@@ -327,74 +327,90 @@ EOF
 
 }
 
-# optional: define zconsul=1 on source
+# optional: define restful=1 on source
 
-[[ "$consul" = "" ]] || {
+[[ "$restful" = "" ]] || {
 
     ########
-    # Consul
+    # Restful API client
     # there is a clear zsh optimization here in get/set kv
     # using zsh/tcp instead of spawning curl
     # and perhaps querying with one call using ?recursive
 
     zmodload zsh/net/tcp
 
-    function zconsul.set() {
-        fn "zconsul.set $*"
+    function restful.put() {
+        # $1 = hostname[:port][/path] (default port: 8500) (default path /v1/kv)
+        # $2 = key
+        # $3 = value
 
-        # checks if consul running up to the caller
+        fn "restful.put $*"
 
-        _host=$1 # ip address
-        _port=${host[(ws@:@)2]:-8500}
-        _k=$2 # key name
-        _v=$3 # value
+        # to check if the http service is running is up to the caller
 
-        req=(_host _port _k _v)
+        _host=${1} # ip address
+        _port=${_host[(ws@:@)2]:-8500}
+        _path=${_path[(ws@:@)3]:/v1/kv}
+        _host=${_host[(ws@:@)1]}
+        _k="$2" # key name
+        _v="$3" # value
+
+        req=(_host _k _v)
         ckreq || return $?
 
-        ztcp $_host $_port || {
-            zerr
-            return 1
-        }
+        if ztcp $_host $_port; then
 
-        _fd=$REPLY
-        #    func "tcp open on fd $fd"
-        cat <<EOF >& $_fd
-PUT /v1/kv/$_k HTTP/1.1
+
+            # TODO: work out various parsers, this one works with consul.io
+
+            _fd=$REPLY
+            #    func "tcp open on fd $fd"
+            cat <<EOF >& $_fd
+PUT ${_path}/$_k HTTP/1.1
 User-Agent: Zuper/$zuper_version
-Host: $_host:$_port
+Host: ${_host}:${_port}
 Accept: */*
-Content-Length: ${#v}
+Content-Length: ${#_v}
 Content-Type: application/x-www-form-urlencoded
 
 EOF
 
-        print -n "$v" >& $_fd
+            print -n "$_v" >& $_fd
 
-        sysread -i $_fd _res
+            sysread -i $_fd _res
 
-        # close connection
-        ztcp -c $_fd
+            # close connection
+            ztcp -c $_fd
 
-        [[ "$_res" =~ "true" ]] || {
-            warn "cannot set key/value in consul: $_k = $_v"
+            [[ "$_res" =~ "true" ]] || {
+                warn "failed PUT on restful key/value"
+                warn "endpoint: $_host:$_port/$_path"
+                warn "resource: $_k = $_v"
+                zerr
+                return 1
+            }
+
+        else
+            error "cannot connect to restful service: $_host:$_port"
             zerr
             return 1
-        }
+        fi
 
         return 0
 
     }
 
-    zconsul.get() {
-        fn "zconsul.get $*"
+    restful.get() {
+        fn "restful.get $*"
 
-        _host=$1 # ip address
-        _port=${host[(ws@:@)2]:-8500}
+
+        _host=${1} # ip address
+        _port=${_host[(ws@:@)2]:-8500}
+        _path=${_path[(ws@:@)3]:/v1/kv}
+        _host=${_host[(ws@:@)1]}
         _k=$2 # key name
-        _v=$3 # value
 
-        req=(_host _port _k _v)
+        req=(_host _k)
         ckreq || return $?
 
         _k=$1
@@ -406,8 +422,10 @@ EOF
 
         _fd=$REPLY
 
+        # TODO: work out various parsers, this one works with consul.io
+
         cat <<EOF >& $_fd
-GET /v1/kv/$k HTTP/1.1
+GET ${_path}/$_k HTTP/1.1
 User-Agent: Zuper/$zuper_version
 Host: $_host:$_port
 Accept: */*
