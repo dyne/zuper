@@ -365,20 +365,21 @@ EOF
     zmodload zsh/net/tcp
 
     function restful.put() {
-        # $1 = hostname[:port][/path] (default port: 8500) (default path /v1/kv)
-        # $2 = key
-        # $3 = value
+        # $1 = hostname
+        # $2 = port
+        # $3 = path
+        # $4 = key
+        # $5 = value
 
         fn "restful.put $*"
 
         # to check if the http service is running is up to the caller
 
         _host=${1} # ip address
-        _port=${_host[(ws@:@)2]:-8500}
-        _path=${_path[(ws@:@)3]:/v1/kv}
-        _host=${_host[(ws@:@)1]}
-        _k="$2" # key name
-        _v="$3" # value
+        _port=${2}
+        _path=${3}
+        _k="$4" # key name
+        _v="$5" # value
 
         req=(_host _k _v)
         ckreq || return $?
@@ -428,12 +429,10 @@ EOF
     restful.get() {
         fn "restful.get $*"
 
-
-        _host=${1} # ip address
-        _port=${_host[(ws@:@)2]:-8500}
-        _path=${_path[(ws@:@)3]:/v1/kv}
-        _host=${_host[(ws@:@)1]}
-        _k=$2 # key name
+        _host=${1}
+        _port=${2}
+        _path=${3}
+        _k=$4 # key name
 
         req=(_host _k)
         ckreq || return $?
