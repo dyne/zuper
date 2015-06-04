@@ -257,6 +257,31 @@ _ztmp_destructor() {
 arrs+=(tmpfiles)
 destruens+=(_ztmp_destructor)
 
+# tokenizer, works only with one char length delimiters
+# saves everything in global array tok=()
+arrs+=(tok)
+strtok() {
+    fn "strtok $*"
+    _string="$1"
+    _delim="$2"
+    req=(_string _delim)
+    ckreq || return $?
+
+    tok=()
+    f=0
+    for c in {1..${#_string}}; do
+        if [[ "${_string[(e)$c]}" == "$_delim" ]]; then
+            # check if not empty
+            t=${_string[(e)$(($f + 1)),$(($c - 1))]}
+            [[ "$t" == "" ]] || tok+=($t)
+            # save last found
+            f=$c
+        fi
+    done
+    # add last token
+    t=${_string[(e)$(($f + 1)),$c]}
+    [[ "$t" == "" ]] || tok+=($t)
+}
 
 # optional: define zkv=1 on source
 
@@ -529,6 +554,13 @@ s/"/\&quot;/g
 # }}} Helpers
 
 # {{{ Config
+
+# This is not a full config parser, but its a mechanism to read single
+# sections of configuration files that are separated using various
+# syntax methods. The only method supported is now org-mode whose
+# sections start with #+ . It fills in the global array
+# $config_section which can be read out to a file or interpreted in
+# memory, whatever syntax it may contain.
 
 vars+=(config_section_type)
 arrs+=(config_section)
