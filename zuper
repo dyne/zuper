@@ -273,7 +273,8 @@ strtok() {
     ckreq || return $?
 
     tok=()
-    f=0
+    local f=0
+    local c=0
     for c in {1..${#_string}}; do
         if [[ "${_string[(e)$c]}" == "$_delim" ]]; then
             # check if not empty
