@@ -1,4 +1,5 @@
 #!/usr/bin/env zsh
+## -*- origami-fold-style: triple-braces -*-
 #
 # Zuper - Zsh Ultimate Programmer's Extensions Refurbished
 #
@@ -31,6 +32,8 @@ arrs=(req freq)
 
 vars+=(zuper_version)
 zuper_version=0.2
+
+# {{{ Messaging
 
 # Messaging function with pretty coloring
 autoload colors
@@ -128,6 +131,9 @@ function _print() {
     return 0
 }
 
+# }}} Messaging
+
+# {{{ Debugging
 
 fn() {
     fun="$@"
@@ -236,6 +242,10 @@ endgame() {
 # unlike TRAPEXIT, the zshexit() hook is not called when functions exit.
 zshexit() { endgame EXIT; return $? }
 
+# }}} Debugging
+
+# {{{ Tempfiles
+
 ##########################
 # Temp file handling
 
@@ -261,6 +271,10 @@ _ztmp_destructor() {
 
 arrs+=(tmpfiles)
 destruens+=(_ztmp_destructor)
+
+# }}} Tempfiles
+
+# {{{ Strings
 
 # tokenizer, works only with one char length delimiters
 # saves everything in global array tok=()
@@ -288,6 +302,12 @@ strtok() {
     t=${_string[(e)$(($f + 1)),$c]}
     [[ "$t" == "" ]] || tok+=($t)
 }
+
+# TODO: move in here some helpers
+
+# }}} Strings
+
+# {{{ Key/Value filesave
 
 # optional: define zkv=1 on source
 
@@ -357,6 +377,10 @@ EOF
     }
 
 }
+
+# }}} Key/Value filesave
+
+# {{{ Get/Set REST API
 
 # optional: define restful=1 on source
 
@@ -470,6 +494,8 @@ EOF
     }
 
 }
+
+# }}} Get/Set REST API
 
 # {{{ Helpers
 [[ "$helpers" = "" ]] || {
@@ -700,4 +726,4 @@ BEGIN { found=0 }
 
 }
 
-# }}}
+# }}} Config
