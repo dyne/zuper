@@ -632,8 +632,6 @@ EOF
     func "$_num key/values stored in $_path"
 }
 
-}
-
 # }}} Key/Value filesave
 
 # {{{ Get/Set REST API
