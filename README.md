@@ -11,7 +11,7 @@
                            (_)
 ```
 
-**Z**sh **U**ltimate **P**rogrammer's **E**xtensions **R**efurbished - version 0.2
+**Z**sh **U**ltimate **P**rogrammer's **E**xtensions **R**efurbished
 
 # Introduction
 
@@ -29,6 +29,14 @@ used as a programming language.
  - improved temp file handling
  - more to come...
 
+# Requirements
+
+Zuper requires the following programs to be installed:
+
+```
+zsh curl sed awk hexdump
+```
+
 # Usage
 
 Documentation is still lacking, however to use Zuper in Zsh scripts
@@ -42,23 +50,24 @@ program call `endgame` for a clean exit. Example test program:
 # switch on debugging output
 DEBUG=1
 
-# switch on zuper's key/value load/save extension
-zkv=1
-# switch off zuper's consul kv get/set extension
-unset consul
-# switch on zuper's helper extensions
-helper=1
-
 # switch logging into test.log
 LOG=test.log
 
+##### INIT
 # load our zuper library
 source zuper
-
 # declare a custom global variable
 vars+=(myvar)
 # assign a default value to our global variable
 myvar=${myvar:-ok}
+# declare a global associative map
+maps+=(mymap)
+# conclude the init phase
+source zuper.init
+#####
+
+# register the zdump debug function to be executed on exit
+destruens+=(zdump)
 
 
 # declare a custom function to print it out
@@ -79,14 +88,6 @@ testfun() {
     # but can also be delete earlier here, optionally
 }
 
-# declare a global associative map
-maps+=(mymap)
-
-# conclude the init phase
-source zuper.init
-
-# register the zdump debug function to be executed on exit
-destruens+=(zdump)
 
 # call our custom function
 testfun
@@ -121,7 +122,7 @@ done
 
 Here we reference applications where zuper is used succesfully:
 
- - Devuan Simple Development Toolkit https://git.devuan.org/devuan/devuan-sdk#tab-readme
+ - Devuan Simple Development Toolkit https://git.devuan.org/groups/sdk
  - Dowse IoT awareness OS http://dyne.org/software/dowse
  - Jaro Mail terminal email http://dyne.org/software/jaro-mail
 
