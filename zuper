@@ -22,10 +22,18 @@
 # Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
+if [[ ! -z ${zuper_version} ]]; then 
+    warning "zuper version ::1 version:: was already loaded -- doing nothing" ${zuper_version}
+    return;
+fi
+
+
 ##########################
 typeset -aU vars
 typeset -aU arrs
 typeset -aU maps
+
+typeset -aU funs
 
 vars=(DEBUG QUIET LOG)
 arrs=(req freq)
@@ -229,7 +237,13 @@ TRAPSTOP() { endgame STOP;  return $? }
 # TRAPZERR() { func "function returns non-zero." }
 
 
-endgame() {
+funs+=(__test_fn)
+
+__test_fn(){
+    echo "foo"
+}
+
+function zuper_end endgame() {
     fn "endgame $*"
 
     # execute all no matter what
@@ -240,8 +254,45 @@ endgame() {
         fn "destructor: $d"
         $d
     done
+
+    # unset all the variables included  in "vars" 
+    for v in $vars; do 
+        unset $v
+    done
+
+    # unset all the assoc-arrays included  in "arrs" 
+    for a in $arrs; do 
+        unset $a
+    done
+
+    # unset all the maps included  in "maps" 
+    for m in $maps; do 
+        unset $m
+    done
+    
+    ## We should also undefine the core zuper functions to make it
+    ## really idempotent. I have added an array "funs" which contains
+    ## the names of the functions to be undefined by endgame/zuper_end
+    ## FIXME!!!! The only "registered" function so far is __test_fn,
+    ## but if we like this we should register all the core zuper
+    ## functions as soon as they are declared
+    for f in $funs; do 
+        unfunction $f
+    done
+    unset maps
+    unset arrs
+    unset vars
+    unset funs
+
     return 0
 }
+
+## This function should reinitialise zuper and all the variables
+# zuper_restart(){
+#     endgame 
+#     source zuper
+# }
+
 
 # Use this to make sure endgame() is called at exit.
 # unlike TRAPEXIT, the zshexit() hook is not called when functions exit.
