@@ -264,6 +264,17 @@ ztmp() {
     tmpfiles+=($ztmpfile)
 }
 
+vars+=(ztmpdir)
+# ztmpd() fills in $ztmpdir global. Caller must copy that variable as
+# it will be overwritten at every call.
+
+ztmpd() {
+    fn ztmpd
+
+    ztmpdir=`mktemp -d`
+    tmpdirs+=($ztmpdir)
+}
+
 # All tempfiles are freed in endgame()
 _ztmp_destructor() {
     fn _ztmp_destructor
@@ -271,10 +282,20 @@ _ztmp_destructor() {
     for f in $tmpfiles; do
         rm -f "$f"
     done
+    for d in $tmpdirs; do 
+        [[ $d == "" || ! -d $d ]] && continue
+        pushd $d
+        [[ `pwd` == "/" ]] && {popd; continue}
+        popd 
+        rm -rf "$d"
+    done
+
     tmpfiles=()
+    tmpdirs=()
 }
 
 arrs+=(tmpfiles)
+arrs+=(tmpdirs)
 destruens+=(_ztmp_destructor)
 
 # }}} Tempfiles
