@@ -1056,7 +1056,7 @@ config.section_read() {
         org-mode)
             _contents=`awk '
 BEGIN { found=0 }
-/^#\+ '"$_section"$'/ { found=1; next }
+/^#\+ '"$_section"'$/ { found=1; next }
 /^#\+/ { if(found==1) exit 0 }
 /^$/ { next }
 { if(found==1) print $0 }
