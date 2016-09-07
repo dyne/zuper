@@ -39,7 +39,7 @@ vars=(DEBUG QUIET LOG)
 arrs=(req freq)
 
 vars+=(zuper_version)
-zuper_version=0.3
+zuper_version=0.4
 
 # load necessary zsh extensions
 zmodload zsh/regex
