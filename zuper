@@ -531,6 +531,12 @@ s/      /%09/g
 '
 }
 
+# Check if a version number (semantic format) is greater than the other
+# returns 0 if the first argument is greater or equal than the second.
+function string.version_greatoreq version_greatoreq() {
+	[[ "$(printf '%s\n' "$@" | sort -rV | head -n 1)" = "$1" ]] && return 0
+	return 1
+}
 
 # }}} Strings
 
