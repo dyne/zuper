@@ -58,8 +58,7 @@ vars+=(last_act last_func last_notice)
 function _msg() {
     local msg="$2"
     command -v gettext 1>/dev/null 2>/dev/null && msg="$(gettext -s "$2")"
-    for i in $(seq 3 ${#});
-    do
+    for i in {3..${#}}; do
         msg=${(S)msg//::$(($i - 2))*::/$*[$i]}
     done
 
