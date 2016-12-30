@@ -562,14 +562,14 @@ maps+=(net_ip4_exit)
 # maps+=(ip6exits)
 
 net.scan_devices() {
-    for i in "${(f)$(find /sys/devices/ -name net)}"; do
-        dev=`ls --indicator-style=none $i`
-
-        # skip the loopback device
-        [[ "$dev" =~ "^lo" ]] && continue
-        func "$dev"
-        net_devices+=($dev)
-    done
+    for i in ${(f)"$(find /sys/devices/ -name net)"}; do
+		for dev in ${(f)"$(ls --indicator-style=none $i)"}; do
+			# skip the loopback device
+			[[ "$dev" =~ "^lo" ]] && continue
+			func "found network device: $dev"
+			net_devices+=($dev)
+		done
+	done
 
     # return error if no device found
     if [[ ${#net_devices} = 0 ]]; then return 1
