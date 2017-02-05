@@ -190,25 +190,33 @@ function ckreq reqck() {
     return $err
 }
 
+# dump all variables, arrays and maps declared as global in zuper
+# do not print out what is empty
 zdump() {
     fn zdump
     [[ ${#vars} -gt 0 ]] && {
         print "Global variables:"
         for _v in $vars; do
-            print " $_v = \t ${(P)_v}"
+			_c=${(P)_v}
+			[[ "$_c" = "" ]] ||
+				print " $_v = \t $_c"
         done
     }
     [[ ${#arrs} -gt 0 ]] && {
         print "Global arrays:"
         for _a in $arrs; do
-        print " $_a \t ( ${(P)_a} )"
+			_c=${(P)_a}
+			[[ "$_c" = "" ]] ||
+				print " $_a \t ( ${(P)_a} )"
         done
     }
     [[ ${#maps} -gt 0 ]] && {
         print "Global maps:"
         for _m in $maps; do
-            print " $_m [key] \t ( ${(Pk)_m} )"
-            print " $_m [val] \t ( ${(Pv)_m} )"
+			[[ "${(Pv)_m}" = "" ]] || {
+				print " $_m [key] \t ( ${(Pk)_m} )"
+				print " $_m [val] \t ( ${(Pv)_m} )"
+			}
         done
     }
 }
