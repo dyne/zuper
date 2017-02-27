@@ -936,8 +936,8 @@ option.parse() {
     fi
     unset discardme
     if ! zparseopts -M -E -D -Adiscardme ${every_opts}; then
-        _failure "Error parsing."
-        return 127
+        _failure "Command parses error."
+        return 1
     fi
     unset discardme
     subcommand=${1}
@@ -947,7 +947,8 @@ option.parse() {
 
     if [[ -z ${(k)option_subcommands[$subcommand]} ]]; then
         _warning "There's no such command \"::1 subcommand::\"." $subcommand
-        exitv=127 _failure "Please try -h for help."
+		_failure "Please try -h for help."
+		return 1
     fi
     argv=("${(@)oldstar}")
     unset oldstar
@@ -960,7 +961,8 @@ option.parse() {
         zparseopts -M -E -D -Aoption ${cmd_opts}
         if [[ $? != 0 ]]; then
             _warning "Some error occurred during option processing."
-            exitv=127 _failure "See \"sdk help\" for more info."
+            _failure "See \"sdk help\" for more info."
+			return 1
         fi
     fi
     #build option_params (array of arguments) and check if there are unrecognized options
@@ -972,7 +974,8 @@ option.parse() {
             continue #it shouldn't be appended to option_params
         elif [[ $arg[1] == '-'  ]]; then
             if [[ $ok == 0 ]]; then
-                exitv=127 _failure "Unrecognized option ::1 arg:: for subcommand ::2 subcommand::" $arg $subcommand
+                _failure "Unrecognized option ::1 arg:: for subcommand ::2 subcommand::" $arg $subcommand
+				return 1
             fi
         fi
         option_params+=$arg
