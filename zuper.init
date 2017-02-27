@@ -26,6 +26,10 @@ tmpfiles=()
 config_section=()
 config_section_type=${config_section_type:-org-mode}
 
+option_subcommands[__empty]=""
+option_subcommands[__unknown]=""
+
+
 
 func "Zuper $zuper_version initialized"
 func "${#vars} global variables registered"

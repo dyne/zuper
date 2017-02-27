@@ -942,13 +942,13 @@ option.parse() {
     unset discardme
     subcommand=${1}
     if [[ -z $subcommand ]]; then
-        subcommand="__default"
+        subcommand="__empty"
     fi
 
     if [[ -z ${(k)option_subcommands[$subcommand]} ]]; then
-        _warning "There's no such command \"::1 subcommand::\"." $subcommand
-		_failure "Please try -h for help."
-		return 1
+		subcommand="__unknown:$subcommand"
+        # _warning "There's no such command \"::1 subcommand::\"." $subcommand
+		# _failure "Please try -h for help."
     fi
     argv=("${(@)oldstar}")
     unset oldstar
@@ -981,7 +981,7 @@ option.parse() {
         option_params+=$arg
     done
     # First parameter actually is the subcommand: delete it and shift
-    [[ $subcommand != '__default' ]] && { option_params[1]=(); shift }
+    [[ $subcommand != '__empty' ]] && { option_params[1]=(); shift }
 
     ### End parsing command-specific options
 
@@ -998,7 +998,7 @@ option.parse() {
 # 	help)
 # 		print "TODO: help"
 # 		;;
-# 	__default)
+# 	__empty)
 # 		zdump
 # 		;;
 
