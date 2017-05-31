@@ -961,7 +961,7 @@ option.parse() {
         zparseopts -M -E -D -Aoption ${cmd_opts}
         if [[ $? != 0 ]]; then
             _warning "Some error occurred during option processing."
-            _failure "See \"sdk help\" for more info."
+            _failure "See zuper option.parse for more info."
 			return 1
         fi
     fi
@@ -986,9 +986,9 @@ option.parse() {
     ### End parsing command-specific options
 
     [[ "$option_params" == "" ]] && {
-        func "sdk command: ::1 subcommand::" $subcommand
+        func "arg command: ::1 subcommand::" $subcommand
     } || {
-        func "sdk command: ::1 subcommand:: ::2 param::" $subcommand $option_params
+        func "arg command: ::1 subcommand:: ::2 param::" $subcommand $option_params
     }
 
 }
