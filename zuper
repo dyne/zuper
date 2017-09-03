@@ -582,7 +582,10 @@ net.scan_devices() {
 
     # return error if no device found
     if [[ ${#net_devices} = 0 ]]; then return 1
-    else return 0; fi
+    else
+		act "${#net_devices} devices found: ${net_devices}"
+		return 0
+	fi
 }
 
 net.scan_addresses() {
@@ -604,13 +607,13 @@ net.scan_addresses() {
     done
 
     # list ipv4
-    notice "${#net_ip4_addr} ipv4 connected devices found"
+    act "${#net_ip4_addr} ipv4 connected devices found"
     for c in ${(k)net_ip4_addr}; do
         act " $c ${net_ip4_addr[$c]}"
     done
 
     # list ipv6
-    notice "${#net_ip6_addr} ipv6 connected devices found"
+    act "${#net_ip6_addr} ipv6 connected devices found"
     for c in ${(k)net_ip6_addr}; do
         act " $c ${net_ip6_addr[$c]}"
     done
