@@ -233,7 +233,7 @@ catch() { function TRAPZERR() { } }
 arrs+=(destruens)
 
 # Trap functions for the endgame event
-TRAPINT()  { endgame INT;   return $? }
+# TRAPINT()  { endgame INT;   return $? }
 # TRAPEXIT() { endgame EXIT;  return $? }
 TRAPHUP()  { endgame HUP;   return $? }
 TRAPQUIT() { endgame QUIT;  return $? }
