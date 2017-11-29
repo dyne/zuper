@@ -411,8 +411,8 @@ function string.extract_emails extract_emails() {
 
 # takes a string as argument, returns success if is an email
 function string.isemail isemail() {
-    [[ "$1" -regex-match "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b" ]] && return 0
-
+    [[ "$1" =~ "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b" ]] && return 0
+	# print "$1" | grep -q -E '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}' && return 0
     return 1
 }
 
